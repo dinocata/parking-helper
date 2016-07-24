@@ -27,9 +27,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private final String SELECTED_PREFIX = "Selected device: ";
 
+    private boolean devicesLoaded = false;
     private BluetoothAdapter myBluetooth = null;
     private ArrayList<BtDevice> devices = new ArrayList<>();
     private BtDevice selectedDevice = null;
+    private DeviceAdapter deviceAdapter;
 
     private AdapterView.OnItemClickListener myListClickListener = new AdapterView.OnItemClickListener()
     {
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     private void loadDevices(){
+        devices.clear();
         Set<BluetoothDevice> pairedDevices = myBluetooth.getBondedDevices();
 
         if (pairedDevices.size()>0)
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         {
             Toast.makeText(getApplicationContext(), "No Paired Bluetooth Devices Found.", Toast.LENGTH_LONG).show();
         }
+        deviceAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -97,9 +101,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(turnBTon, 1);
             }
 
-            loadDevices();
-
-            DeviceAdapter deviceAdapter = new DeviceAdapter(this, devices);
+            devicesLoaded = true;
+            deviceAdapter = new DeviceAdapter(this, devices);
             deviceList.setAdapter(deviceAdapter);
             deviceList.setOnItemClickListener(myListClickListener); //Method called when the device from the list is clicked
         }
@@ -124,9 +127,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 this.startActivity(i);
                 break;
             case R.id.deviceListBtn:
-                if(deviceList.getVisibility() == View.GONE)
+                if(deviceList.getVisibility() == View.GONE && devicesLoaded) {
+                    loadDevices();
                     deviceList.setVisibility(View.VISIBLE);
-                else{
+                }else{
                     deviceList.setVisibility(View.GONE);
                     selectedDevice = null;
                     String text = SELECTED_PREFIX + "none";

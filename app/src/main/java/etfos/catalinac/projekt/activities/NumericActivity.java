@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.UUID;
@@ -16,14 +18,15 @@ import etfos.catalinac.projekt.R;
 import etfos.catalinac.projekt.utility.BluetoothConnector;
 
 public class NumericActivity extends AppCompatActivity {
+    Button connectionButton;
 
     String address = null;
     BluetoothAdapter myBluetooth = null;
     BluetoothConnector bluetoothConnector;
 
     private ProgressDialog progress;
-    private BluetoothConnector.BluetoothSocketWrapper bluetoothSocket;
     private boolean isBtConnected = false;
+
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     @Override
@@ -34,6 +37,8 @@ public class NumericActivity extends AppCompatActivity {
         address = newint.getStringExtra("address");
 
         setContentView(R.layout.activity_numeric);
+
+        connectionButton = (Button) findViewById(R.id.numericBtn);
 
         new ConnectBT().execute(); //Call the class to connect
     }
@@ -50,34 +55,16 @@ public class NumericActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... devices) //while the progress dialog is shown, the connection is done in background
         {
-            if (!isBtConnected) {
-                myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
-                BluetoothDevice bluetoothDevice = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
-                bluetoothConnector = new BluetoothConnector(bluetoothDevice, true, myBluetooth, null);
-
-                try {
-                    bluetoothSocket = bluetoothConnector.connect();
-                } catch (IOException e) {
-                    System.out.println("FAIL BRO!!");
-                    e.printStackTrace();
-                }
-            }
+            // TODO attempt connection
+            progress.dismiss();
+            System.out.println(address);
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void result) //after the doInBackground, it checks if everything went fine
+        protected void onPostExecute(Void result)
         {
             super.onPostExecute(result);
-
-            if (!ConnectSuccess) {
-                msg("Connection Failed. Is it a SPP Bluetooth? Try again.");
-                finish();
-            } else {
-                msg("Connected.");
-                isBtConnected = true;
-            }
-            progress.dismiss();
         }
 
     }
