@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -25,7 +26,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView tvSelectedDevice;
     ListView deviceList;
 
+    public static String EXTRA_DEVICE_ADDRESS = "device_address";
+
     private final String SELECTED_PREFIX = "Selected device: ";
+    private static final String TAG = "DeviceListActivity";
 
     private boolean devicesLoaded = false;
     private BluetoothAdapter myBluetooth = null;
@@ -84,29 +88,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         deviceList.addHeaderView(textView);
 
+        checkBTState();
+
         assert deviceList != null;
         deviceList.setVisibility(View.GONE);
 
-        myBluetooth = BluetoothAdapter.getDefaultAdapter();
-        if(myBluetooth == null)
-        {
-            Toast.makeText(getApplicationContext(), "Bluetooth Device Not Available", Toast.LENGTH_LONG).show();
-        }
-        else
-        {
-            if (!myBluetooth.isEnabled())
-            {
-                //Ask to the user turn the bluetooth on
-                Intent turnBTon = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(turnBTon, 1);
+        devicesLoaded = true;
+        deviceAdapter = new DeviceAdapter(this, devices);
+        deviceList.setAdapter(deviceAdapter);
+        deviceList.setOnItemClickListener(myListClickListener); //Method called when the device from the list is clicked
+    }
+
+    private void checkBTState() {
+        // Check device has Bluetooth and that it is turned on
+        myBluetooth=BluetoothAdapter.getDefaultAdapter(); // CHECK THIS OUT THAT IT WORKS!!!
+        if(myBluetooth==null) {
+            Toast.makeText(getBaseContext(), "Device does not support Bluetooth", Toast.LENGTH_SHORT).show();
+        } else {
+            if (myBluetooth.isEnabled()) {
+                Log.d(TAG, "...Bluetooth ON...");
+            } else {
+                //Prompt user to turn on Bluetooth
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
             }
-
-            devicesLoaded = true;
-            deviceAdapter = new DeviceAdapter(this, devices);
-            deviceList.setAdapter(deviceAdapter);
-            deviceList.setOnItemClickListener(myListClickListener); //Method called when the device from the list is clicked
         }
+    }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        startButton.setText(R.string.startBtnText);
+
+        if(selectedDevice == null)
+            startButton.setBackgroundResource(R.drawable.start_button_disabled);
+        else
+            startButton.setBackgroundResource(R.drawable.start_button_enabled);
     }
 
     @Override
@@ -116,7 +133,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.startBtn:
                 if(selectedDevice != null){
                     i.setClass(this, NumericActivity.class);
-                    i.putExtra("address", selectedDevice.getAddress());
+                    i.putExtra(EXTRA_DEVICE_ADDRESS, selectedDevice.getAddress());
+                    startButton.setBackgroundResource(R.drawable.start_button_connecting);
+                    startButton.setText(R.string.connectingText);
                     this.startActivity(i);
                 }else{
                     Toast.makeText(getApplicationContext(), "Please choose a device first", Toast.LENGTH_LONG).show();

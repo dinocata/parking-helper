@@ -8,4 +8,5 @@
     <string name="liveMode">LIVE MODE</string>
     <string name="deviceListTitle">Bluetooth devices</string>
     <string name="selectedDeviceText">Selected device: none</string>
+    <string name="connectingText">Connecting...</string>
 </resources>
