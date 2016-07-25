@@ -21,4 +21,5 @@
     <dimen name="deviceIconSize">64dp</dimen>
     <dimen name="selectedDeviceSize">18sp</dimen>
     <dimen name="selectedMargin">120dp</dimen>
+    <dimen name="numericTextSize">24sp</dimen>
 </resources>

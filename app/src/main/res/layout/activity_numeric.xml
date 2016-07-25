@@ -10,7 +10,7 @@
         android:layout_height="@dimen/numericBtnSize"
         android:text="@string/numericBtnText"
         android:textColor="@color/colorDark"
-        android:textSize="@dimen/startSize"
+        android:textSize="@dimen/numericTextSize"
         android:background="@drawable/start_button_disabled"
         android:padding="15dp"
         android:layout_centerHorizontal="true"

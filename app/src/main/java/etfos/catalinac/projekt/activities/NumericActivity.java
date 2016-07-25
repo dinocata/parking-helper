@@ -1,10 +1,14 @@
 package etfos.catalinac.projekt.activities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.Button;
@@ -31,6 +35,15 @@ public class NumericActivity extends Activity {
 
     // String for MAC address
     private static String address;
+    private SoundPool soundPool;
+    private int soundID;
+    boolean loaded = false;
+    boolean play = false;
+    private int avgCounter = 0;
+    private int avgSamples = 4;
+    private Integer distance = 0;
+    private Integer distanceSum = 0;
+    private Long current, lastTime, counter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,7 +54,20 @@ public class NumericActivity extends Activity {
         //Link the buttons and textViews to respective views
         sensorView = (Button) findViewById(R.id.numericBtn);
 
-        bluetoothIn = new Handler() {
+        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId,
+                                       int status) {
+                loaded = true;
+            }
+        });
+
+        lastTime = System.currentTimeMillis();
+        soundID = soundPool.load(this, R.raw.beep, 1);
+
+
+        bluetoothIn = new Handler() {hzgz
             public void handleMessage(android.os.Message msg) {
                 if (msg.what == handlerState) {                                     //if message is what we want
                     String readMessage = (String) msg.obj;                                                                // msg.arg1 = bytes from connect thread
@@ -50,9 +76,40 @@ public class NumericActivity extends Activity {
                     if (endOfLineIndex > 0) {                                           // make sure there data before ~
                         if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
                         {
-                            String sensor = recDataString.substring(1, 5);             //get sensor value from string between indices 1-5
+                            String sensor = recDataString.substring(1, endOfLineIndex);             //get sensor value from string between indices 1-5
+                            System.out.println(sensor);
 
-                            sensorView.setText(sensor + "cm");    //update the textviews with sensor values
+                            if(!sensor.equals("-1")){
+                                current = System.currentTimeMillis();
+                                distanceSum += Integer.parseInt(sensor);
+                                avgCounter++;
+
+                                if(avgCounter >= avgSamples){
+                                    distance = distanceSum/avgSamples;
+
+                                    sensorView.setText(sensor + "cm");    //update the textviews with sensor values
+
+                                    if((current - lastTime) > 110){
+                                        if((current - lastTime) >= distance * 11){
+                                            lastTime = System.currentTimeMillis();
+                                            play = true;
+                                        }
+                                    }
+                                    else if((current - lastTime) == 110){
+                                        lastTime = System.currentTimeMillis();
+                                        play = true;
+                                    }
+
+                                    if(distance < 100 && play){
+                                        soundPool.play(soundID, 1, 1, 1, 0, 1f);
+                                        play = false;
+                                    }
+                                    distance = 0;
+                                    distanceSum = 0;
+                                    avgCounter = 0;
+                                }
+                            }
+
                         }
                         recDataString.delete(0, recDataString.length());                    //clear all string data
                     }
