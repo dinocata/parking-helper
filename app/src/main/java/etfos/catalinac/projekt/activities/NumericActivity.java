@@ -90,6 +90,7 @@ public class NumericActivity extends Activity {
         }
         // Establish the Bluetooth socket connection.
         try
+
         {
             btSocket.connect();
         } catch (IOException e) {
