@@ -42,7 +42,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnClickListe
 
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
-    private static StringBuilder recDataString = new StringBuilder();
+    private static StringBuilder recDataString;
 
     // SPP UUID service - this should work for most devices
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -163,6 +163,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onResume() {
         super.onResume();
+
+        recDataString = new StringBuilder();
 
         modeClicked = false;
 

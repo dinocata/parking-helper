@@ -33,7 +33,7 @@ public class NumericActivity extends Activity implements View.OnClickListener{
 
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
-    private static StringBuilder recDataString = new StringBuilder();
+    private static StringBuilder recDataString;
 
     // SPP UUID service - this should work for most devices
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -146,6 +146,8 @@ public class NumericActivity extends Activity implements View.OnClickListener{
         super.onResume();
 
         modeClicked = false;
+
+        recDataString = new StringBuilder();
 
         //Get MAC address from DeviceListActivity via intent
         Intent intent = getIntent();
