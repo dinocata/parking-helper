@@ -53,7 +53,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnClickListe
     private int soundID;
     private Thread counter;
     boolean loaded = false;
-    boolean counterRunning = false;
+    volatile boolean counterRunning = false;
     private static volatile Float pixelDistance = -1.f;
     private static volatile Integer distance = 200;
 
@@ -91,24 +91,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnClickListe
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
         checkBTState();
-
-        counter = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Long diff, lastTime = System.currentTimeMillis();
-
-                while (counterRunning) {
-                    diff = System.currentTimeMillis() - lastTime;
-
-                    if (distance <= DISTANCE_THRESHOLD && diff >= MIN_PERIOD && diff > distance * DISTANCE_LIMIT) {
-                        soundPool.play(soundID, 1, 1, 1, 0, 1f);
-                        lastTime = System.currentTimeMillis();
-                    }
-                }
-            }
-        });
-
-        counterRunning = true;
     }
 
     private static class IncomingHandler extends Handler {
@@ -167,6 +149,23 @@ public class LiveActivity extends AppCompatActivity implements View.OnClickListe
         recDataString = new StringBuilder();
 
         modeClicked = false;
+
+        counter = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Long diff, lastTime = System.currentTimeMillis();
+                counterRunning = true;
+
+                while (counterRunning) {
+                    diff = System.currentTimeMillis() - lastTime;
+
+                    if (distance <= DISTANCE_THRESHOLD && diff >= MIN_PERIOD && diff > distance * DISTANCE_LIMIT) {
+                        soundPool.play(soundID, 1, 1, 1, 0, 1f);
+                        lastTime = System.currentTimeMillis();
+                    }
+                }
+            }
+        });
 
         //Get MAC address from DeviceListActivity via intent
         Intent intent = getIntent();
@@ -236,6 +235,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnClickListe
     {
         super.onPause();
         counterRunning = false;
+        try {
+            counter.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try
         {
             //Don't leave Bluetooth sockets open when leaving activity

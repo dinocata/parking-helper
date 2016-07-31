@@ -75,22 +75,6 @@ public class NumericActivity extends Activity implements View.OnClickListener{
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
         checkBTState();
-
-        counter = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Long diff, lastTime = System.currentTimeMillis();
-                counterRunning = true;
-
-                while (counterRunning) {
-                    diff = System.currentTimeMillis() - lastTime;
-                    if (distance <= DISTANCE_THRESHOLD && diff >= MIN_PERIOD && diff > distance * DISTANCE_LIMIT) {
-                        soundPool.play(soundID, 1, 1, 1, 0, 1f);
-                        lastTime = System.currentTimeMillis();
-                    }
-                }
-            }
-        });
     }
 
     @Override
@@ -145,6 +129,22 @@ public class NumericActivity extends Activity implements View.OnClickListener{
     public void onResume() {
         super.onResume();
 
+        counter = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Long diff, lastTime = System.currentTimeMillis();
+                counterRunning = true;
+
+                while (counterRunning) {
+                    diff = System.currentTimeMillis() - lastTime;
+                    if (distance <= DISTANCE_THRESHOLD && diff >= MIN_PERIOD && diff > distance * DISTANCE_LIMIT) {
+                        soundPool.play(soundID, 1, 1, 1, 0, 1f);
+                        lastTime = System.currentTimeMillis();
+                    }
+                }
+            }
+        });
+
         modeClicked = false;
 
         recDataString = new StringBuilder();
@@ -198,7 +198,13 @@ public class NumericActivity extends Activity implements View.OnClickListener{
     public void onPause()
     {
         super.onPause();
+
         counterRunning = false;
+        try {
+            counter.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try
         {
             //Don't leave Bluetooth sockets open when leaving activity
