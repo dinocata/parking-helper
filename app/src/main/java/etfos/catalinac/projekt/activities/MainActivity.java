@@ -21,7 +21,6 @@ import etfos.catalinac.projekt.models.BtDevice;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Button startButton;
-    Button settingsButton;
     Button deviceListBtn;
     TextView tvSelectedDevice;
     ListView deviceList;
@@ -46,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String text = SELECTED_PREFIX + selectedDevice.getName();
             tvSelectedDevice.setText(text);
             startButton.setBackgroundResource(R.drawable.start_button_enabled);
+            startButton.setText(R.string.startEnabledText);
         }
     };
 
@@ -74,11 +74,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvSelectedDevice = (TextView) findViewById(R.id.tvSelectedDevice);
 
         startButton = (Button) findViewById(R.id.startBtn);
-        settingsButton = (Button) findViewById(R.id.settingsBtn);
         deviceListBtn = (Button)findViewById(R.id.deviceListBtn);
 
         startButton.setOnClickListener(this);
-        settingsButton.setOnClickListener(this);
         deviceListBtn.setOnClickListener(this);
 
         deviceList = (ListView)findViewById(R.id.deviceListLV);
@@ -119,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onResume(){
         super.onResume();
         startButton.setText(R.string.startBtnText);
+        startButton.setBackgroundResource(R.drawable.start_button_disabled);
 
         if(selectedDevice == null)
             startButton.setBackgroundResource(R.drawable.start_button_disabled);
@@ -141,10 +140,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(getApplicationContext(), "Please choose a device first", Toast.LENGTH_LONG).show();
                 }
                 break;
-            case R.id.settingsBtn:
-                i.setClass(this, SettingsActivity.class);
-                this.startActivity(i);
-                break;
             case R.id.deviceListBtn:
                 if(deviceList.getVisibility() == View.GONE && devicesLoaded) {
                     loadDevices();
@@ -155,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String text = SELECTED_PREFIX + "none";
                     tvSelectedDevice.setText(text);
                     startButton.setBackgroundResource(R.drawable.start_button_disabled);
+                    startButton.setText(R.string.startBtnText);
                 }
                 break;
         }

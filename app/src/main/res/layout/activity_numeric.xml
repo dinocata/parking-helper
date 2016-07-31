@@ -8,10 +8,10 @@
         android:id ="@+id/numericBtn"
         android:layout_width="@dimen/numericBtnSize"
         android:layout_height="@dimen/numericBtnSize"
-        android:text="@string/numericBtnText"
+        android:text="@string/waitText"
         android:textColor="@color/colorDark"
         android:textSize="@dimen/numericTextSize"
-        android:background="@drawable/start_button_disabled"
+        android:background="@drawable/start_button_connecting"
         android:padding="15dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true" />

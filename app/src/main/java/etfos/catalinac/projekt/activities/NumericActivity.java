@@ -1,18 +1,18 @@
 package etfos.catalinac.projekt.activities;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,30 +20,32 @@ import java.io.OutputStream;
 import java.util.UUID;
 import etfos.catalinac.projekt.R;
 
-public class NumericActivity extends Activity {
-    TextView sensorView;
-    Handler bluetoothIn;
+public class NumericActivity extends Activity implements View.OnClickListener{
+    static Button sensorView;
+    private boolean modeClicked;
+    private Button liveModeBtn;
+    IncomingHandler bluetoothIn;
 
-    final int handlerState = 0;                        //used to identify handler message
+    final static int handlerState = 0;                        //used to identify handler message
+    final Integer DISTANCE_THRESHOLD = 200;
+    final Integer DISTANCE_LIMIT = 10;
+    final Integer MIN_PERIOD = 100;
+
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
-    private StringBuilder recDataString = new StringBuilder();
-    private ConnectedThread mConnectedThread;
+    private static StringBuilder recDataString = new StringBuilder();
 
     // SPP UUID service - this should work for most devices
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     // String for MAC address
     private static String address;
-    private SoundPool soundPool;
+    private volatile SoundPool soundPool;
     private int soundID;
+    private Thread counter;
     boolean loaded = false;
-    boolean play = false;
-    private int avgCounter = 0;
-    private int avgSamples = 4;
-    private Integer distance = 0;
-    private Integer distanceSum = 0;
-    private Long current, lastTime, counter;
+    boolean counterRunning = false;
+    private static volatile Integer distance = 200;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,74 +53,86 @@ public class NumericActivity extends Activity {
 
         setContentView(R.layout.activity_numeric);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         //Link the buttons and textViews to respective views
         sensorView = (Button) findViewById(R.id.numericBtn);
 
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+        liveModeBtn = (Button) findViewById(R.id.liveModeBtn);
+        liveModeBtn.setOnClickListener(this);
+
+        soundPool = new SoundPool(100, AudioManager.STREAM_MUSIC, 0);
         soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
             public void onLoadComplete(SoundPool soundPool, int sampleId,
-                                       int status) {
-                loaded = true;
+                                       int status) {loaded = true;
             }
         });
 
-        lastTime = System.currentTimeMillis();
         soundID = soundPool.load(this, R.raw.beep, 1);
 
-
-        bluetoothIn = new Handler() {hzgz
-            public void handleMessage(android.os.Message msg) {
-                if (msg.what == handlerState) {                                     //if message is what we want
-                    String readMessage = (String) msg.obj;                                                                // msg.arg1 = bytes from connect thread
-                    recDataString.append(readMessage);                                      //keep appending to string until ~
-                    int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                    if (endOfLineIndex > 0) {                                           // make sure there data before ~
-                        if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
-                        {
-                            String sensor = recDataString.substring(1, endOfLineIndex);             //get sensor value from string between indices 1-5
-                            System.out.println(sensor);
-
-                            if(!sensor.equals("-1")){
-                                current = System.currentTimeMillis();
-                                distanceSum += Integer.parseInt(sensor);
-                                avgCounter++;
-
-                                if(avgCounter >= avgSamples){
-                                    distance = distanceSum/avgSamples;
-
-                                    sensorView.setText(sensor + "cm");    //update the textviews with sensor values
-
-                                    if((current - lastTime) > 110){
-                                        if((current - lastTime) >= distance * 11){
-                                            lastTime = System.currentTimeMillis();
-                                            play = true;
-                                        }
-                                    }
-                                    else if((current - lastTime) == 110){
-                                        lastTime = System.currentTimeMillis();
-                                        play = true;
-                                    }
-
-                                    if(distance < 100 && play){
-                                        soundPool.play(soundID, 1, 1, 1, 0, 1f);
-                                        play = false;
-                                    }
-                                    distance = 0;
-                                    distanceSum = 0;
-                                    avgCounter = 0;
-                                }
-                            }
-
-                        }
-                        recDataString.delete(0, recDataString.length());                    //clear all string data
-                    }
-                }
-            }
-        };
+        bluetoothIn = new IncomingHandler();
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
         checkBTState();
+
+        counter = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Long diff, lastTime = System.currentTimeMillis();
+                counterRunning = true;
+
+                while (counterRunning) {
+                    diff = System.currentTimeMillis() - lastTime;
+                    if (distance <= DISTANCE_THRESHOLD && diff >= MIN_PERIOD && diff > distance * DISTANCE_LIMIT) {
+                        soundPool.play(soundID, 1, 1, 1, 0, 1f);
+                        lastTime = System.currentTimeMillis();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent i = new Intent();
+        switch(v.getId()) {
+            case R.id.liveModeBtn:
+                if(!modeClicked){
+                    i.setClass(this, LiveActivity.class);
+                    i.putExtra(MainActivity.EXTRA_DEVICE_ADDRESS, address);
+                    liveModeBtn.setBackgroundResource(R.drawable.mode_button_connecting);
+                    liveModeBtn.setText(R.string.waitText);
+                    liveModeBtn.setTextColor(Color.BLACK);
+                    modeClicked = true;
+                    this.startActivity(i);
+                }
+                break;
+        }
+    }
+
+    private static class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            if (msg.what == handlerState) {                                     //if message is what we want
+                String readMessage = (String) msg.obj;                                                                // msg.arg1 = bytes from connect thread
+                recDataString.append(readMessage);                                      //keep appending to string until ~
+                int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
+                if (endOfLineIndex > 0) {                                           // make sure there data before ~
+                    if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
+                    {
+                        String sensor = recDataString.substring(1, endOfLineIndex);             //get sensor value from string between indices 1-5
+                        if (!sensor.equals("-1")) {
+                            String text = sensor + "cm";
+                            sensorView.setText(text);    //update the textviews with sensor values
+                            distance = Integer.parseInt(sensor);
+                        }
+
+                    }
+                    recDataString.delete(0, recDataString.length());
+                }
+            }
+        }
     }
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
@@ -131,6 +145,8 @@ public class NumericActivity extends Activity {
     public void onResume() {
         super.onResume();
 
+        modeClicked = false;
+
         //Get MAC address from DeviceListActivity via intent
         Intent intent = getIntent();
 
@@ -139,6 +155,12 @@ public class NumericActivity extends Activity {
 
         //create device and set the MAC address
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         try {
             btSocket = createBluetoothSocket(device);
@@ -160,18 +182,21 @@ public class NumericActivity extends Activity {
                 //insert code to deal with this
             }
         }
-        mConnectedThread = new ConnectedThread(btSocket);
+        ConnectedThread mConnectedThread = new ConnectedThread(btSocket);
         mConnectedThread.start();
 
         //I send a character when resuming.beginning transmission to check device is connected
         //If it is not an exception will be thrown in the write method and finish() will be called
         mConnectedThread.write("x");
+
+        counter.start();
     }
 
     @Override
     public void onPause()
     {
         super.onPause();
+        counterRunning = false;
         try
         {
             //Don't leave Bluetooth sockets open when leaving activity

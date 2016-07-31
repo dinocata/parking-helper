@@ -1,12 +1,15 @@
 <resources>
     <string name="app_name">Parking helper</string>
-    <string name="startBtnText">START</string>
+    <string name="startBtnText">Select a device</string>
     <string name="connection">Bluetooth connection:</string>
     <string name="deviceList">DEVICE LIST</string>
     <string name="settings">SETTINGS</string>
-    <string name="numericBtnText">No connection!</string>
-    <string name="liveMode">LIVE MODE</string>
+    <string name="numericBtnText">No connection</string>
+    <string name="liveMode">GRAPH MODE</string>
+    <string name="numericMode">NUMERIC MODE</string>
     <string name="deviceListTitle">Bluetooth devices</string>
     <string name="selectedDeviceText">Selected device: none</string>
     <string name="connectingText">Connecting...</string>
+    <string name="waitText">Please wait...</string>
+    <string name="startEnabledText">START</string>
 </resources>

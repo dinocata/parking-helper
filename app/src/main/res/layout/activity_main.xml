@@ -48,25 +48,23 @@
             android:background="@drawable/settings_button"
             android:text="@string/deviceList"
             android:textSize="@dimen/settingsSize"
-            android:layout_marginLeft="@dimen/buttonMargin"
-            android:layout_marginStart="@dimen/buttonMargin"
-            android:layout_alignTop="@+id/settingsBtn"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
-
-        <Button
-            android:id="@+id/settingsBtn"
-            android:layout_width="@dimen/buttonWidth"
-            android:layout_height="wrap_content"
-            android:background="@drawable/settings_button"
-            android:text="@string/settings"
-            android:textSize="@dimen/settingsSize"
             android:layout_marginTop="60dp"
-            android:layout_marginRight="@dimen/buttonMargin"
-            android:layout_marginEnd="@dimen/buttonMargin"
-            android:layout_below="@+id/startBtn"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/startBtn" />
+
+        <!--<Button-->
+            <!--android:id="@+id/settingsBtn"-->
+            <!--android:layout_width="@dimen/buttonWidth"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@drawable/settings_button"-->
+            <!--android:text="@string/settings"-->
+            <!--android:textSize="@dimen/settingsSize"-->
+            <!--android:layout_marginTop="60dp"-->
+            <!--android:layout_marginRight="@dimen/buttonMargin"-->
+            <!--android:layout_marginEnd="@dimen/buttonMargin"-->
+            <!--android:layout_below="@+id/startBtn"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_alignParentEnd="true" />-->
     </RelativeLayout>
 
     <RelativeLayout
