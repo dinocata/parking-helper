@@ -1,6 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark">
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/distanceTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="@string/waitText"
+        android:textColor="@color/colorBright"
+        />
+
+    <View
+        android:id="@+id/wallLine"
+        android:layout_width="300dp"
+        android:layout_height="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/wallOffset"
+        android:background="@drawable/rectangle"/>
+
+    <RelativeLayout
+        android:id="@+id/carRectangle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="150dp">
+        <View
+            android:layout_centerHorizontal="true"
+            android:id="@+id/carChasis"
+            android:layout_width="110dp"
+            android:layout_height="200dp"
+            android:background="@drawable/rectangle"
+            />
+        <View
+            android:id="@+id/carTopRight"
+            android:layout_width="@dimen/wheelWdith"
+            android:layout_height="@dimen/wheelHeight"
+            android:layout_toRightOf="@+id/carChasis"
+            android:layout_toEndOf="@id/carChasis"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/rectangle_black"/>
+
+        <View
+            android:id="@+id/carBottomRight"
+            android:layout_width="@dimen/wheelWdith"
+            android:layout_height="@dimen/wheelHeight"
+            android:layout_toRightOf="@+id/carChasis"
+            android:layout_toEndOf="@id/carChasis"
+            android:layout_marginTop="135dp"
+            android:background="@drawable/rectangle_black"/>
+
+        <View
+            android:id="@+id/carTopLeft"
+            android:layout_width="@dimen/wheelWdith"
+            android:layout_height="@dimen/wheelHeight"
+            android:layout_toLeftOf="@id/carChasis"
+            android:layout_toStartOf="@id/carChasis"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/rectangle_black"/>
+
+        <View
+            android:id="@+id/carBottomLeft"
+            android:layout_width="@dimen/wheelWdith"
+            android:layout_height="@dimen/wheelHeight"
+            android:layout_toLeftOf="@id/carChasis"
+            android:layout_toStartOf="@id/carChasis"
+            android:layout_marginTop="135dp"
+            android:background="@drawable/rectangle_black"/>
+    </RelativeLayout>
+
+
+    <Button
+        android:id="@+id/liveModeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/mode_button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/settingsMargin"
+        android:text="@string/numericMode"
+        android:textSize="@dimen/settingsSize"
+        android:textColor="@color/colorBright"
+        android:textStyle="bold"
+        android:paddingEnd="@dimen/modePadding"
+        android:paddingRight="@dimen/modePadding"
+        android:paddingStart="@dimen/modePadding"
+        android:paddingLeft="@dimen/modePadding"
+        />
+
+</RelativeLayout>

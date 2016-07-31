@@ -10,7 +10,7 @@
     <dimen name="startBtnSize">180dp</dimen>
 
     <dimen name="settingsSize">12sp</dimen>
-    <dimen name="settingsMargin">60dp</dimen>
+    <dimen name="settingsMargin">40dp</dimen>
     <dimen name="settingsPadding">20dp</dimen>
 
     <dimen name="numericBtnSize">180dp</dimen>
@@ -21,4 +21,8 @@
     <dimen name="deviceIconSize">64dp</dimen>
     <dimen name="selectedDeviceSize">18sp</dimen>
     <dimen name="selectedMargin">120dp</dimen>
+    <dimen name="numericTextSize">24sp</dimen>
+    <dimen name="wallOffset">50dp</dimen>
+    <dimen name="wheelWdith">15dp</dimen>
+    <dimen name="wheelHeight">40dp</dimen>
 </resources>
